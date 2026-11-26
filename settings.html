@@ -66,7 +66,7 @@
                     <div>
                         <div class="eyebrow">WEALTHNESS WORKSPACE</div>
                         <h1>Settings</h1>
-                        <p class="page-subtitle">Manage your preferences, connected-account demos, and data backups.</p>
+                        <p class="page-subtitle">Manage your preferences and local data.</p>
                     </div>
                 </div>
 
@@ -117,11 +117,12 @@
                         <div class="settings-row">
                             <div>
                                 <strong>Restore backup</strong>
-                                <p>Replace local records using a previous backup.</p>
+                                <p>Restore local records from a previous backup. This replaces current data.</p>
                             </div>
                             <label class="btn btn-secondary btn-small" for="import-json">Choose file</label>
                             <input class="hidden" id="import-json" type="file" accept=".json">
                         </div>
+                        <p class="panel-subtitle">Security note: Wealthness stores data in this browser and does not have a login or server-side account. Avoid entering sensitive financial details and use it only on a device you trust.</p>
                     </article>
                 </section>
 
@@ -146,7 +147,7 @@
                     <div class="panel-heading">
                         <div>
                             <h2>Connected Accounts</h2>
-                            <p class="panel-subtitle">Manage demo account labels and import transaction records.</p>
+                            <p class="panel-subtitle">Manage demo account labels only.</p>
                         </div>
                         <span class="pill warning">Demo mode</span>
                     </div>
@@ -181,23 +182,6 @@
                     </form>
                 </section>
 
-                <!-- This section groups related settings information and controls. -->
-                <section class="panel">
-                    <div class="panel-heading">
-                        <div>
-                            <h2>Import transactions from CSV</h2>
-                            <p class="panel-subtitle">Use the Wealthness template to prepare your transaction list.</p>
-                        </div>
-                    </div>
-
-                    <div class="toolbar">
-                        <button class="btn btn-secondary btn-small" id="download-template">Download CSV template</button>
-                        <label class="btn btn-primary btn-small" for="csv-import">Import CSV</label>
-                        <input class="hidden" id="csv-import" type="file" accept=".csv">
-                    </div>
-
-                    <p class="panel-subtitle">Required columns: date, type, description, category, amount. Type must be income or expense. Imported records are added to your transaction history.</p>
-                </section>
             </main>
         </div>
     </div>
