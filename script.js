@@ -475,10 +475,13 @@ function renderDebt(){
 // This function updates the page sections that use the shared financial information. 
 function refresh(){
     renderOverview();
+    renderCategoryPage();
     renderBudget();
     renderSavings();
     renderDebt();
     renderSettings();
+    renderCategoryPage();
+    if(byId("profile-preview-name"))setText("profile-preview-name",data.settings.name||"Wealthness user");
     renderRecurring();
     renderCalendar();
     renderInsights();
@@ -614,6 +617,7 @@ function initPage(){
         e.target.reset();
         populateCategoryOptions();
         renderBudgets();
+        renderCategoryPage();
         toast("Custom category added.");
     });
 
@@ -725,6 +729,7 @@ function initPage(){
         e.preventDefault();
         data.settings.name=val("profile-name");
         save();
+        setText("profile-preview-name",data.settings.name||"Wealthness user");
         toast("Settings saved.")
     });
 
