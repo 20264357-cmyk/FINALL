@@ -327,13 +327,11 @@ function renderOverviewGoals(){
 // This function shows the user's transactions in the Budget page. 
 function renderBudget(){
     const list=byId("transaction-list");
-    if(!list)return;
-
     const search=(val("budget-search")||"").toLowerCase(),type=val("type-filter");
 
     const filtered=[...data.transactions].filter(t=>(!type||t.type===type)&&(`${t.description} ${t.category} ${t.date}`.toLowerCase().includes(search))).sort((a,b)=>b.date.localeCompare(a.date));
 
-    list.innerHTML=filtered.length?filtered.map(t=>`<tr><td>${escapeHTML(t.date)}</td><td>${escapeHTML(t.description)}</td><td>${escapeHTML(categoryName(t))}</td><td><span class="pill ${t.type==="income"?"":"neutral"}">${t.type}</span></td><td class="${t.type==="income"?"amount-income":"amount-expense"}">${t.type==="income"?"+":"−"}${money(t.amount)}</td><td><button class="btn btn-secondary btn-small" data-edit-tx="${t.id}">Edit</button> <button class="btn btn-danger btn-small" data-delete-tx="${t.id}">Delete</button></td></tr>`).join(""):`<tr><td colspan="6"><div class="empty-state">No matching transactions found.</div></td></tr>`;
+    if(list)list.innerHTML=filtered.length?filtered.map(t=>`<tr><td>${escapeHTML(t.date)}</td><td>${escapeHTML(t.description)}</td><td>${escapeHTML(categoryName(t))}</td><td><span class="pill ${t.type==="income"?"":"neutral"}">${t.type}</span></td><td class="${t.type==="income"?"amount-income":"amount-expense"}">${t.type==="income"?"+":"−"}${money(t.amount)}</td><td><button class="btn btn-secondary btn-small" data-edit-tx="${t.id}">Edit</button> <button class="btn btn-danger btn-small" data-delete-tx="${t.id}">Delete</button></td></tr>`).join(""):`<tr><td colspan="6"><div class="empty-state">No matching transactions found.</div></td></tr>`;
 
     const m=totals(monthTransactions());
     setText("transaction-count",String(data.transactions.length));
