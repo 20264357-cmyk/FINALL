@@ -580,6 +580,7 @@ function renderChallenge(){
 function initPage(){
     const page=document.body.dataset.page;
     initTheme();
+    setText("current-date",new Date().toLocaleDateString("en-PH",{weekday:"long",year:"numeric",month:"long",day:"numeric"}));
 
     populateCategoryOptions();
     processRecurringTransactions();
