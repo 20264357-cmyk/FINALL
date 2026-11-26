@@ -355,7 +355,7 @@ function renderBudgets(){
         const limit=Number(data.budgets[cat])||0;
         const spent=sum(monthTransactions().filter(t=>t.type==="expense"&&t.category===cat),t=>t.amount);
         const pct=limit?Math.min(100,spent/limit*100):0;
-        return `<div class="category-row"><span class="category-name">${cat}</span><span class="category-amount">${money(spent)} / ${limit?money(limit):"No limit"}</span><div class="progress-track"><div class="progress-fill ${pct>=100?"danger":pct>=80?"warning":""}" style="width:${pct}%"></div></div><div style="grid-column:1/-1"><button class="btn btn-secondary btn-small" data-budget="${cat}">Set limit</button></div></div>`
+        return `<div class="category-row"><span class="category-name">${escapeHTML(cat)}</span><span class="category-amount">${money(spent)} / ${limit?money(limit):"No limit"}</span><div class="progress-track"><div class="progress-fill ${pct>=100?"danger":pct>=80?"warning":""}" style="width:${pct}%"></div></div><div style="grid-column:1/-1"><button class="btn btn-secondary btn-small" data-budget="${escapeHTML(cat)}">Set limit</button></div></div>`
     }).join("");
 }
 
@@ -377,8 +377,8 @@ function handleTransactionSubmit(e){
 
     const id=val("transaction-id"),type=val("transaction-type"),description=val("transaction-description"),category=val("transaction-category"),amount=Number(val("transaction-amount")),date=val("transaction-date");
 
-    if(!description||!category||!date||!Number.isFinite(amount)||amount<=0){
-        toast("Please complete all fields with a valid amount.");
+    if(!description||description.length>120||!category||category.length>60||!date||!/\\d{4}-\\d{2}-\\d{2}/.test(date)||!Number.isFinite(amount)||amount<=0||amount>1000000000||!["income","expense"].includes(type)){
+        toast("Please enter valid details. Amount must be above 0 and below 1 billion.");
         return;
     }
 
@@ -863,11 +863,16 @@ function initPage(){
         if(!file)return;
 
         try{
+            if(file.size>1024*1024)throw Error("size");
             const imported=JSON.parse(await file.text());
-            if(!imported||!Array.isArray(imported.transactions))throw Error();
+            const requiredArrays=["transactions","goals","debts","accounts","recurring","plannedPayments","customCategories"];
+            if(!imported||typeof imported!=="object"||requiredArrays.some(key=>!Array.isArray(imported[key]))||
+               imported.transactions.some(t=>!t||!["income","expense"].includes(t.type)||!Number.isFinite(Number(t.amount))||Number(t.amount)<=0||typeof t.description!=="string"))throw Error("invalid");
 
-            if(confirm("Replace your current Wealthness data with this backup?")){
+            if(confirm("Replace your current Wealthness data with this backup? Only restore a file you trust.")){
                 data={...defaultData(),...imported};
+                data.settings={...defaultData().settings,...(imported.settings||{})};
+                data.planner={...defaultData().planner,...(imported.planner||{})};
                 save();
                 refresh();
                 toast("Backup restored.")
@@ -877,53 +882,6 @@ function initPage(){
         }
 
         e.target.value=""
-    });
-
-    byId("csv-import")?.addEventListener("change",async e=>{
-        const file=e.target.files[0];
-        if(!file)return;
-
-        try{
-            const lines=(await file.text()).trim().split(/\r?\n/);
-            const headers=lines.shift().split(",").map(x=>x.trim().toLowerCase());
-            const idx=k=>headers.indexOf(k);
-
-            if(["date","type","description","category","amount"].some(k=>idx(k)<0))throw Error("headers");
-
-            let added=0;
-
-            lines.forEach(line=>{
-                const cols=line.split(",").map(x=>x.trim().replace(/^"|"$/g,""));
-                const amount=Number(cols[idx("amount")]);
-                const type=cols[idx("type")].toLowerCase();
-
-                if(cols[idx("date")]&&["income","expense"].includes(type)&&cols[idx("description")]&&amount>0){
-                    data.transactions.push({
-                        id:uid(),
-                        date:cols[idx("date")],
-                        type,
-                        description:cols[idx("description")],
-                        category:cols[idx("category")]||"Others",
-                        amount,
-                        source:"CSV import"
-                    });
-                    added++
-                }
-            });
-
-            save();
-            refresh();
-            toast(`${added} transaction(s) imported.`)
-        }catch(err){
-            toast("CSV needs columns: date,type,description,category,amount.")
-        }
-
-        e.target.value=""
-    });
-
-    byId("download-template")?.addEventListener("click",()=>{
-        const csv="date,type,description,category,amount\n2026-11-01,income,Monthly allowance,Others,8000\n2026-11-02,expense,Lunch,Food,150\n";
-        downloadBlob(new Blob([csv],{type:"text/csv"}),"wealthness-transactions-template.csv")
     });
 
     const toggle=byId("menu-toggle"),sidebar=byId("sidebar"),overlay=byId("mobile-overlay");
