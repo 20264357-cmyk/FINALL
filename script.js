@@ -325,20 +325,31 @@ function renderOverviewGoals(){
 // Budget page lists the same transactions used by the dashboard and health overview.
 // Displays transactions, spending limits, and expense summaries.
 // This function shows the user's transactions in the Budget page. 
+// Shows transaction records and budget summaries, then refreshes budget-limit cards.
 function renderBudget(){
     const list=byId("transaction-list");
     const search=(val("budget-search")||"").toLowerCase(),type=val("type-filter");
-
     const filtered=[...data.transactions].filter(t=>(!type||t.type===type)&&(`${t.description} ${t.category} ${t.date}`.toLowerCase().includes(search))).sort((a,b)=>b.date.localeCompare(a.date));
-
     if(list)list.innerHTML=filtered.length?filtered.map(t=>`<tr><td>${escapeHTML(t.date)}</td><td>${escapeHTML(t.description)}</td><td>${escapeHTML(categoryName(t))}</td><td><span class="pill ${t.type==="income"?"":"neutral"}">${t.type}</span></td><td class="${t.type==="income"?"amount-income":"amount-expense"}">${t.type==="income"?"+":"−"}${money(t.amount)}</td><td><button class="btn btn-secondary btn-small" data-edit-tx="${t.id}">Edit</button> <button class="btn btn-danger btn-small" data-delete-tx="${t.id}">Delete</button></td></tr>`).join(""):`<tr><td colspan="6"><div class="empty-state">No matching transactions found.</div></td></tr>`;
-
     const m=totals(monthTransactions());
     setText("transaction-count",String(data.transactions.length));
     setText("budget-income-total",money(m.income));
     setText("budget-expense-total",money(m.expense));
     setText("budget-balance-total",money(m.income-m.expense));
-
+    const limitTotal=sum(Object.values(data.budgets),value=>value);
+    const expenseTotal=m.expense;
+    const remaining=limitTotal-expenseTotal;
+    const limitCount=Object.values(data.budgets).filter(value=>Number(value)>0).length;
+    const progress=limitTotal?Math.min(100,expenseTotal/limitTotal*100):0;
+    setText("budget-limit-total",money(limitTotal));
+    setText("budget-spent-total",money(expenseTotal));
+    setText("budget-remaining-total",money(remaining));
+    setText("budget-limits-count",String(limitCount));
+    setText("budget-progress-planned",money(limitTotal));
+    setText("budget-progress-spent",money(expenseTotal));
+    setText("budget-progress-label",limitTotal?`${Math.round(progress)}% used`:"No limits set");
+    setText("budget-progress-copy",limitTotal?(remaining>=0?`${money(remaining)} remaining across your planned categories.`:`You have spent ${money(Math.abs(remaining))} more than the combined limits.`):"Set limits for your categories to begin tracking progress.");
+    if(byId("budget-overall-progress"))byId("budget-overall-progress").style.width=progress+"%";
     renderBudgets();
 }
 
