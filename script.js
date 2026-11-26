@@ -377,7 +377,7 @@ function handleTransactionSubmit(e){
 
     const id=val("transaction-id"),type=val("transaction-type"),description=val("transaction-description"),category=val("transaction-category"),amount=Number(val("transaction-amount")),date=val("transaction-date");
 
-    if(!description||description.length>120||!category||category.length>60||!date||!/\\d{4}-\\d{2}-\\d{2}/.test(date)||!Number.isFinite(amount)||amount<=0||amount>1000000000||!["income","expense"].includes(type)){
+    if(!description||description.length>120||!category||category.length>60||!date||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(date)||!Number.isFinite(amount)||amount<=0||amount>1000000000||!["income","expense"].includes(type)){
         toast("Please enter valid details. Amount must be above 0 and below 1 billion.");
         return;
     }
