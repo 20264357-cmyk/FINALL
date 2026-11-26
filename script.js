@@ -471,6 +471,25 @@ function renderDebt(){
 // After a change, redraw every page section that may depend on the shared data.
 // Re-renders page sections that depend on shared financial data.
 // This function updates the page sections that use the shared financial information. 
+// Displays spending totals and limit progress for the dedicated Categories page.
+function renderCategoryPage(){
+    const list=byId("category-breakdown");
+    if(!list)return;
+    const cats=allCategories();
+    const expenses=monthTransactions().filter(t=>t.type==="expense");
+    const grouped={};
+    expenses.forEach(t=>grouped[categoryName(t)]=(grouped[categoryName(t)]||0)+Number(t.amount));
+    const sorted=Object.entries(grouped).sort((a,b)=>b[1]-a[1]);
+    setText("category-count",String(cats.length));
+    setText("category-expense-total",money(sum(expenses,t=>t.amount)));
+    setText("category-top",sorted[0]?.[0]||"—");
+    setText("custom-count",String((data.customCategories||[]).length));
+    list.innerHTML=cats.map(cat=>{
+        const spent=grouped[cat]||0,limit=Number(data.budgets[cat])||0,pct=limit?Math.min(100,spent/limit*100):0;
+        return `<div class="category-row"><span class="category-name">${escapeHTML(cat)}</span><span class="category-amount">${money(spent)}</span><div class="progress-track"><div class="progress-fill ${pct>=100?"danger":pct>=80?"warning":""}" style="width:${pct}%"></div></div><div><span class="goal-meta">${limit?money(spent)+" of "+money(limit):"No spending limit set"}</span> <button class="btn btn-secondary btn-small" data-budget="${escapeHTML(cat)}">Set limit</button></div></div>`;
+    }).join("")||'<div class="empty-state">No categories yet.</div>';
+}
+
 function refresh(){
     renderOverview();
     renderCategoryPage();
